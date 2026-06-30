@@ -7,9 +7,14 @@ const connectDB = async () => {
     });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
+    if (process.env.VERCEL) {
+      console.error(`Error connecting to MongoDB on Vercel (${error.message}). Please verify your MONGODB_URI environment variable.`);
+      return;
+    }
     console.warn(`Local MongoDB connection failed (${error.message}). Switching to in-memory MongoDB for seamless zero-setup testing...`);
     try {
-      const { MongoMemoryServer } = require('mongodb-memory-server');
+      const dynamicRequire = eval('require');
+      const { MongoMemoryServer } = dynamicRequire('mongodb-memory-server');
       const mongod = await MongoMemoryServer.create();
       const uri = mongod.getUri();
       const conn = await mongoose.connect(uri);
